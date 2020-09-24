@@ -47,28 +47,34 @@ def is_valid_move(board, player, move):
     new_locX = move[2]
     new_locY = move[3]
 
-    if board[pieceX, pieceY] != player:
+    if board[pieceY][pieceX] != player:
         # Chosen piece does not belong to the player or is not there, so invalid
+        print("Not Player Piece")
         return False
     elif pieceX == new_locX and pieceY == new_locY:
         # Not moving the piece, so invalid
+        print("Not Moving")
         return False
     elif pieceX == new_locX:
-        # Moving up or down
+        # Moving Up or down
 
         # Look up or down to make sure no pieces between the piece and its new location
         if pieceY > new_locY:
-            # Moving up
-
-            for loc in board[pieceX][new_locY:pieceY-1]:
-                if loc != '':
+            # Moving Up
+            print("Moving Up")
+            for loc in board[new_locY:pieceY]:
+                print(loc[pieceX])
+                if loc[pieceX] != ' ':
+                    print("Piece In Way")
                     return False
             return True
         else:
             # Moving down
-
-            for loc in board[pieceX][pieceY+1:new_locY]:
-                if loc != '':
+            print("Moving Down")
+            for loc in board[pieceY+1:new_locY+1]:
+                print(loc[pieceX])
+                if loc[pieceX] != ' ':
+                    print("Piece In Way")
                     return False
             return True
     elif pieceY == new_locY:
@@ -77,18 +83,23 @@ def is_valid_move(board, player, move):
         # Look left or right to make sure no pieces between the piece and its new location
         if pieceX > new_locX:
             # Moving left
-
-            for loc in board[new_locX:pieceX-1]:
-                if loc[pieceY] != '':
+            print("Moving Left")
+            for loc in board[pieceY][new_locX:pieceX]:
+                print(loc)
+                if loc != ' ':
+                    print("Piece In Way")
                     return False
             return True
         else:
             # Moving right
-
-            for loc in board[pieceX+1:new_locX]:
-                if loc[pieceY] != '':
+            print("Moving Right")
+            for loc in board[pieceY][pieceX+1:new_locX+1]:
+                print(loc)
+                if loc != ' ':
+                    print("Piece In Way")
                     return False
             return True
     else:
         # Piece is not moving in a straight line, so invalid
+        print("Not moving in a straight line")
         return False
