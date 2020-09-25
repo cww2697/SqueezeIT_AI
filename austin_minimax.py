@@ -24,13 +24,13 @@ def get_next_move(board, player):
     debug_file.write(datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).isoformat())
     debug_file.write('\n\n')
 
-    result = minimax(board, player, depth, 1, debug_file)
+    result = minimax(board, player, depth, 1, -99, debug_file)
 
     debug_file.close()
 
     return result
 
-def minimax(board, player, depth, current_level, debug_file):
+def minimax(board, player, depth, current_level, ab_best, debug_file):
     debugModifer = ''
 
     debugModifer = ''
@@ -70,22 +70,35 @@ def minimax(board, player, depth, current_level, debug_file):
 
                         # If it is a valid move, 
                         if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, debug_file)
+                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file)
 
                             if current_level % 2 != 0:
                                 # Odd level, so maximize
-                                if currentHeuristic > bestHeuristic:
-                                    #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} > {str(bestHeuristic)})')
-                                    debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} > {str(bestHeuristic)})\n')
-                                    bestMove = currentMove
-                                    bestHeuristic = currentHeuristic
+
+                                # See if we can prune
+                                if current_level == 1 or currentHeuristic < ab_best:
+                                    if currentHeuristic > bestHeuristic:
+                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} > {str(bestHeuristic)})')
+                                        debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} > {str(bestHeuristic)})\n')
+                                        bestMove = currentMove
+                                        bestHeuristic = currentHeuristic
+                                else:
+                                    # Prune the branch
+                                    debug_file.write(debugModifer + f'{currentHeuristic} >= {ab_best} PRUNING BRANCH\n')
+                                    return 99
                             else:
                                 # Even level, so minimize
-                                if currentHeuristic < bestHeuristic:
-                                    #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                    debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                    bestMove = currentMove
-                                    bestHeuristic = currentHeuristic
+
+                                if current_level == 1 or currentHeuristic > ab_best:
+                                    if currentHeuristic < bestHeuristic:
+                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
+                                        debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
+                                        bestMove = currentMove
+                                        bestHeuristic = currentHeuristic
+                                else:
+                                    # Prune the branch
+                                    debug_file.write(debugModifer + f'{currentHeuristic} <= {ab_best} PRUNING BRANCH\n')
+                                    return -99
                         else:
                             #print(debugModifer, currentMove, 'is not a valid move')
                             debug_file.write(debugModifer + str(currentMove) + ' is not a valid move\n')
@@ -102,22 +115,35 @@ def minimax(board, player, depth, current_level, debug_file):
 
                         # If it is a valid move, 
                         if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, debug_file)
+                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file)
 
                             if current_level % 2 != 0:
                                 # Odd level, so maximize
-                                if currentHeuristic > bestHeuristic:
-                                    #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                    debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                    bestMove = currentMove
-                                    bestHeuristic = currentHeuristic
+
+                                # See if we can prune
+                                if current_level == 1 or currentHeuristic < ab_best:
+                                    if currentHeuristic > bestHeuristic:
+                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
+                                        debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
+                                        bestMove = currentMove
+                                        bestHeuristic = currentHeuristic
+                                else:
+                                    # Prune the branch
+                                    debug_file.write(debugModifer + f'{currentHeuristic} <= {ab_best} PRUNING BRANCH\n')
+                                    return 99
                             else:
                                 # Even level, so minimize
-                                if currentHeuristic < bestHeuristic:
-                                    #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                    debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                    bestMove = currentMove
-                                    bestHeuristic = currentHeuristic
+
+                                if current_level == 1 or currentHeuristic > ab_best:
+                                    if currentHeuristic < bestHeuristic:
+                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
+                                        debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
+                                        bestMove = currentMove
+                                        bestHeuristic = currentHeuristic
+                                else:
+                                    # Prune the branch
+                                    debug_file.write(debugModifer + f'{currentHeuristic} >= {ab_best} PRUNING BRANCH\n')
+                                    return -99
                         else:
                             #print(debugModifer, currentMove, 'is not a valid move')
                             debug_file.write(debugModifer + str(currentMove) + 'is not a valid move\n')
