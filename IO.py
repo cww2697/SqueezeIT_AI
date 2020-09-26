@@ -2,9 +2,13 @@ import numpy as np
 
 def write_file(gamestate):
     fhandle_write = open('gamestate.txt', 'w')
-    for i in gamestate:
-        writerow(i)
+    for x in gamestate:
+        writerow(x)
+    fhandle_write.close()
 
 def read_file(gamestate):
-    fhandle_read = open('gametate.txt', 'r')
+    with open('gamestate.txt') as fhandle_read:
+        gamestate = [line.split() for line in fhandle_read]
+    fhandle_read.close()
+
 
