@@ -12,7 +12,9 @@ def read_file(gamestate):
     # Open gamestate file for reading
     with open('gamestate.txt') as fhandle_read:
         # Split lines and convert back to array for analysis
-        gamestate = [line.split() for line in fhandle_read]
+        for line in fhandle_read:
+            gamestate.append(line.split(','))
+            print(gamestate)
     fhandle_read.close() # close file
 
 
