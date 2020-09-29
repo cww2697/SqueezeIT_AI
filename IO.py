@@ -1,5 +1,3 @@
-import numpy as np
-
 def write_file(gamestate):
     # Open gamestate file
     fhandle_write = open('gamestate.txt', 'w') 
