@@ -22,7 +22,7 @@ def simple_heuristic(board, player):
 
 
 def defensive_heuristic(board, player):
-    counter = 0
+    counter = simple_heuristic(board, player)
     opponent = 'W' if player == 'B' else 'B'
 
     for x in range(0,8, 1):
@@ -31,9 +31,17 @@ def defensive_heuristic(board, player):
                 counter -= 1
     for x in range(0,8, 1):
         for y in range(0, 8 , 1):
-            if board[y][x] == board[y][x+2]:
+            if board[y][x] == board[y][x+1]:
+                counter -= 1
+    for x in range(0,8, 1):
+        for y in range(0, 8 , 1):
+            if board[y][x] == board[y+1][x]:
                 counter -= 1
     for x in range(0,8, 1):
         for y in range(0, 8 , 1):
             if board[y][x] == board[y+1][x+1]:
                 counter += 1
+
+def aggressive_heuristic(board, player):
+    counter = simple_heuristic(board, player)
+    opponent = 'W' if player == 'B' else 'B'
