@@ -31,7 +31,7 @@ def defensive_heuristic(board, player):
                 counter -= 1
     for x in range(0,8, 1):
         for y in range(0, 8 , 1):
-            if board[y][x] == board[y][x+2]:
+            if board[y][x] == board[y][x+1]:
                 counter -= 1
     for x in range(0,8, 1):
         for y in range(0, 8 , 1):
