@@ -7,15 +7,16 @@
 # is represented with B's, along with the team the agent is making
 # decisions for. The function returns a tuple of the format
 #  
-#           [x, y, a, b]
+#           (x, y, a, b)
 # 
 # where (x, y) is the location of the piece to be moved, and (a, b) 
 # is the new location
 
 from copy import deepcopy
 import datetime
+import heurisitcs
 
-def get_next_move(board, player):
+def get_next_move(board, player, heuristic_method):
     # Set how deep we want to go
     depth = 3
 
@@ -24,13 +25,13 @@ def get_next_move(board, player):
     debug_file.write(datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).isoformat())
     debug_file.write('\n\n')
 
-    result = minimax(board, player, depth, 1, -99, debug_file)
+    result = minimax(board, player, depth, 1, -99, debug_file, heuristic_method)
 
     debug_file.close()
 
     return result
 
-def minimax(board, player, depth, current_level, ab_best, debug_file):
+def minimax(board, player, depth, current_level, ab_best, debug_file, heuristic_method):
     debugModifer = ''
 
     debugModifer = ''
@@ -43,7 +44,12 @@ def minimax(board, player, depth, current_level, ab_best, debug_file):
     if depth < current_level:
         # We are at the bottom of the tree, time to propigate back up
         #debug_file.write(debugModifer + 'At bottom. Get value of board\n')
-        return heuristic(board, player)
+        if (heuristic_method == 'simple')
+            return heurisitcs.simple_heuristic(board, player)
+        elif (heuristic_method == 'aggressive'):
+            return heurisitcs.aggressive_heuristic(board, )
+        elif (heuristic_method == 'defensive'):
+            return heurisitcs.defensive_heuristic(board, player)
     else:
         # Initialize containers for best moves
         # If we are minimizing, use 99. If maximizing, use -99 (i.e., no matter what, the heuristic will be
@@ -70,7 +76,7 @@ def minimax(board, player, depth, current_level, ab_best, debug_file):
 
                         # If it is a valid move, 
                         if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file)
+                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file, heuristic_method)
 
                             if current_level % 2 != 0:
                                 # Odd level, so maximize
@@ -113,9 +119,9 @@ def minimax(board, player, depth, current_level, ab_best, debug_file):
                         #print(debugModifer, 'Considering', currentMove)
                         debug_file.write(debugModifer + ' Considering ' + str(currentMove) + '\n')
 
-                        # If it is a valid move, 
+                        # If it is a valid move
                         if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file)
+                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file, heuristic_method)
 
                             if current_level % 2 != 0:
                                 # Odd level, so maximize
@@ -158,46 +164,6 @@ def minimax(board, player, depth, current_level, ab_best, debug_file):
             #print(debugModifer, 'Best Heuristic at level', str(current_level) + ':', bestHeuristic)
             debug_file.write(debugModifer + 'Best Heuristic at level ' + str(current_level) + ': ' + str(bestHeuristic) + '\n')
             return bestHeuristic
-
-# Heuristic function that judges the value of a particular game state 
-# given a board and the player to be judged
-def heuristic(board, player):
-    # Notes for possible heuristic calculation
-    # 
-    #  - Obviously, if you are squeezing the opponent, that is good
-    #  - If you are put into a position where you will be squeezed on 
-    #    the next turn, that is bad (also squeezing yourself is probably
-    #    bad)
-    #  - Best to probably weight pieces captured vs pieces lost and take
-    #    any move where we come out on top, even if sacrificing
-    #  - Positions that threaten to squeeze two different pieces separatly
-    #    is good, as it forces the opponent to choose and guarantees a 
-    #    capture. For example (we are white)
-    # 
-    #       _ B W
-    #       _ W B
-    #       W _ _
-    #  - Probably best to encourage reasonable aggression in the agent
-    #  - If winning is the only objective, time wasting is a perfectly 
-    #    viable strategy if we get a lead
-    #      
-
-    # Temp Heuristic: Count how many pieces we have left and how many the opponent
-    # has left and value the board like that
-    counter = 0
-    opponent = 'W' if player == 'B' else 'B'
-
-    for x in range(0, 8, 1):
-        for y in range(0, 8, 1):
-            if board[y][x] == player:
-                counter += 1
-    
-    for x in range(0, 8, 1):
-        for y in range(0, 8, 1):
-            if board[y][x] == opponent:
-                counter -= 1
-
-    return counter
 
 # Given a move, make sure its valid, make the move, and resolve any squeezes
 def make_move(board, player, move):
