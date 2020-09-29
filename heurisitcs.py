@@ -41,3 +41,7 @@ def defensive_heuristic(board, player):
         for y in range(0, 8 , 1):
             if board[y][x] == board[y+1][x+1]:
                 counter += 1
+
+def aggressive_heuristic(board, player):
+    counter = simple_heuristic(board, player)
+    opponent = 'W' if player == 'B' else 'B'
