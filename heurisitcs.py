@@ -25,27 +25,31 @@ def defensive_heuristic(board, player):
     counter = simple_heuristic(board, player)
     opponent = 'W' if player == 'B' else 'B'
 
-    for x in range(0,8, 1):
+    for x in range(0, 6, 1):
         for y in range(0, 8 , 1):
-            if board[y][x] == board[y][x+2]:
+            if board[y][x] == player and board[y][x] == board[y][x+2]:
+                counter -= 1
+    for x in range(0, 7, 1):
+        for y in range(0, 8 , 1):
+            if board[y][x] == player and board[y][x] == board[y][x+1]:
                 counter -= 1
     for x in range(0,8, 1):
-        for y in range(0, 8 , 1):
-            if board[y][x] == board[y][x+1]:
+        for y in range(0, 7 , 1):
+            if board[y][x] == player and board[y][x] == board[y+1][x]:
                 counter -= 1
     for x in range(0,8, 1):
-        for y in range(0, 8 , 1):
-            if board[y][x] == board[y+1][x]:
+        for y in range(0, 6 , 1):
+            if board[y][x] == player and board[y][x] == board[y+2][x]:
                 counter -= 1
-    for x in range(0,8, 1):
-        for y in range(0, 8 , 1):
-            if board[y][x] == board[y+2][x]:
-                counter -= 1
-    for x in range(0,8, 1):
-        for y in range(0, 8 , 1):
-            if board[y][x] == board[y+1][x+1]:
+    for x in range(0,7, 1):
+        for y in range(0, 7, 1):
+            if board[y][x] == player and board[y][x] == board[y+1][x+1]:
                 counter += 1
+    
+    return counter
 
 def aggressive_heuristic(board, player):
     counter = simple_heuristic(board, player)
     opponent = 'W' if player == 'B' else 'B'
+
+    return counter

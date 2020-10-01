@@ -1,173 +1,66 @@
-# Written by Austin Maddox
-
-# Description:
-# This module defines a single function, get_next_move, which receives
-# an 8x8 array representing a Squeeze-It board, where the position of
-# white pieces is represented with W's, and the position of black pieces
-# is represented with B's, along with the team the agent is making
-# decisions for. The function returns a tuple of the format
-#  
-#           (x, y, a, b)
-# 
-# where (x, y) is the location of the piece to be moved, and (a, b) 
-# is the new location
-
+import tkinter as tk
+from enum import Enum
+import re
+import IO
+import austin_minimax
+import time
 from copy import deepcopy
-import datetime
-import heurisitcs
+from functools import partial
 
-def get_next_move(board, player, heuristic_method):
-    # Set how deep we want to go
-    depth = 3
+#Constants
+GRID_HEIGHT = 8
+GRID_WIDTH = 8
+WC = 'W'
+BC = 'B'
+EC = ' '
 
-    # Initialize Debug File
-    debug_file = open('austin_minimax_debug.txt', 'w')
-    debug_file.write(datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).isoformat())
-    debug_file.write('\n\n')
 
-    result = minimax(board, player, depth, 1, -99, debug_file, heuristic_method)
+HEURISTIC_OPTIONS_LIST = [
+    ("Player Controlled", "player"),
+    ("Simple Minimax", "simple"),
+    ("Aggressive Minimax", "aggressive"),
+    ("Defensive Minimax", "defensive")
+]
 
-    debug_file.close()
+#GUI Globals
+window = tk.Tk()
 
-    print(result)
+white_variable = tk.StringVar()
+black_variable = tk.StringVar()
 
-    return result
+#Global
+grid = [
+    [BC, BC, BC, BC, BC, BC, BC, BC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [WC, WC, WC, WC, WC, WC, WC, WC ]]
+cur_move = dict([("W", (-1, -1, -1, -1)), ("B", (-1, -1, -1, -1))])
+current_player = 'W'
+turn_count = 0
+player_heuristics = dict([("W", "player"), ("B", "player")])
+board_buttons = []
+turn_label = ""
+board_button_funcs = []
+start_game = False
 
-def minimax(board, player, depth, current_level, ab_best, debug_file, heuristic_method):
-    debugModifer = ''
+"""*****************MAIN FUNCTIONS*********************"""
 
-    debugModifer = ''
-
-    for i in range(0, current_level-1, 1):
-        debugModifer += '\t'
+#Printing the Game Grid
+def print_grid(grid):
+    """This function is drawing the grid"""
+    print("       A   B   C   D   E   F   G   H\n")
+    for i in range(GRID_HEIGHT):
+        print(i, "   |", end=" ")
+        for j in range(GRID_WIDTH):
+            current_cell = grid[i][j]
+            print(current_cell + " |", end=" ")
+        print("")
+    print("")
     
-    debugModifer += str(current_level) + ' - '
-
-    if depth < current_level:
-        # We are at the bottom of the tree, time to propigate back up
-        #debug_file.write(debugModifer + 'At bottom. Get value of board\n')
-        if heuristic_method == 'simple':
-            return heurisitcs.simple_heuristic(board, player)
-        elif heuristic_method == 'aggressive':
-            return heurisitcs.aggressive_heuristic(board, player)
-        elif heuristic_method == 'defensive':
-            return heurisitcs.defensive_heuristic(board, player)
-    else:
-        # Initialize containers for best moves
-        # If we are minimizing, use 99. If maximizing, use -99 (i.e., no matter what, the heuristic will be
-        # replaced on the first move we look at)
-        bestMove = ()
-        bestHeuristic = -99 if current_level % 2 != 0 else 99
-        opponent = 'W' if player == 'B' else 'B'
-        current_player = player if current_level % 2 != 0 else opponent
-
-        # For each player piece, for each possible move, recursively call minimax() with current_level + 1
-        for x in range(0, 8, 1):
-            for y in range(0, 8, 1):
-                # When odd, consider your moves. When even, consider opponent moves
-                if board[y][x] == current_player:
-                    # Generate every possible move this piece can do (limit search to just row and column)
-                    
-                    # Check vertical moves
-                    for newY in range(0, 8, 1):
-                        # Make a new move
-                        currentMove = (x, y, x, newY)
-
-                        #print(debugModifer, 'Considering', currentMove)
-                        debug_file.write(debugModifer + ' Considering ' + str(currentMove) + '\n')
-
-                        # If it is a valid move, 
-                        if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file, heuristic_method)
-
-                            if current_level % 2 != 0:
-                                # Odd level, so maximize
-
-                                # See if we can prune
-                                if current_level == 1 or currentHeuristic < ab_best:
-                                    if currentHeuristic > bestHeuristic:
-                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} > {str(bestHeuristic)})')
-                                        debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} > {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                else:
-                                    # Prune the branch
-                                    debug_file.write(debugModifer + f'{currentHeuristic} >= {ab_best} PRUNING BRANCH\n')
-                                    return 99
-                            else:
-                                # Even level, so minimize
-
-                                if current_level == 1 or currentHeuristic > ab_best:
-                                    if currentHeuristic < bestHeuristic:
-                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                        debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                else:
-                                    # Prune the branch
-                                    debug_file.write(debugModifer + f'{currentHeuristic} <= {ab_best} PRUNING BRANCH\n')
-                                    return -99
-                        else:
-                            #print(debugModifer, currentMove, 'is not a valid move')
-                            debug_file.write(debugModifer + str(currentMove) + ' is not a valid move\n')
-                        
-                        
-
-                    # Check horizontal moves
-                    for newX in range(0, 8, 1):
-                        # Make a new move
-                        currentMove = (x, y, newX, y)
-
-                        #print(debugModifer, 'Considering', currentMove)
-                        debug_file.write(debugModifer + ' Considering ' + str(currentMove) + '\n')
-
-                        # If it is a valid move
-                        if is_valid_move(board, current_player, currentMove):
-                            currentHeuristic = minimax(make_move(board, current_player, currentMove), player, depth, current_level + 1, bestHeuristic, debug_file, heuristic_method)
-
-                            if current_level % 2 != 0:
-                                # Odd level, so maximize
-
-                                # See if we can prune
-                                if current_level == 1 or currentHeuristic < ab_best:
-                                    if currentHeuristic > bestHeuristic:
-                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                        debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                else:
-                                    # Prune the branch
-                                    debug_file.write(debugModifer + f'{currentHeuristic} <= {ab_best} PRUNING BRANCH\n')
-                                    return 99
-                            else:
-                                # Even level, so minimize
-
-                                if current_level == 1 or currentHeuristic > ab_best:
-                                    if currentHeuristic < bestHeuristic:
-                                        #print(debugModifer, currentMove, 'is better than', bestMove, f'({str(currentHeuristic)} < {str(bestHeuristic)})')
-                                        debug_file.write(debugModifer + str(currentMove) + 'is better than' + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                else:
-                                    # Prune the branch
-                                    debug_file.write(debugModifer + f'{currentHeuristic} >= {ab_best} PRUNING BRANCH\n')
-                                    return -99
-                        else:
-                            #print(debugModifer, currentMove, 'is not a valid move')
-                            debug_file.write(debugModifer + str(currentMove) + 'is not a valid move\n')
-                    
-        # If we are propigating, return the best heuristic
-        # If we are done propigating, return the best move we found
-        if current_level == 1:
-            #print(debugModifer, 'Best move:', bestMove, 'with Heuristic:', bestHeuristic)
-            debug_file.write(debugModifer + 'Best move: ' + str(bestMove) + ' with Heuristic ' + str(bestHeuristic) + '\n')
-            return bestMove
-        else:
-            #print(debugModifer, 'Best Heuristic at level', str(current_level) + ':', bestHeuristic)
-            debug_file.write(debugModifer + 'Best Heuristic at level ' + str(current_level) + ': ' + str(bestHeuristic) + '\n')
-            return bestHeuristic
-
-# Given a move, make sure its valid, make the move, and resolve any squeezes
 def make_move(board, player, move):
     ##print(player, f'({move[0]}, {move[1]}) to ({move[2]}, {move[3]})')
     newBoard = deepcopy(board)
@@ -304,8 +197,12 @@ def make_move(board, player, move):
 
     return newBoard
 
-# Given a board, player, and move, return whether the move is valid
+# Checks move legality and updates grid
 def is_valid_move(board, player, move):
+    ##print(board),
+    ##print(player)
+    ##print(move)
+
     pieceX = move[0]
     pieceY = move[1]
     new_locX = move[2]
@@ -363,3 +260,193 @@ def is_valid_move(board, player, move):
         # Piece is not moving in a straight line, so invalid
         ##print('Not moving in a straight line')
         return False
+
+def game_over():
+    global turn_count
+
+    return turn_count >= 50
+
+def update_GUI():
+    global grid
+    global board_buttons
+    global current_player
+    global cur_move
+    global turn_count
+    global turn_label
+
+    for i in range(8):
+        for j in range(8):
+            board_buttons[i][j]["text"] = grid[i][j]
+            #board_buttons[i][j]["bg"] = 'blue'
+            print(cur_move[current_player])
+    #if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1:
+        #board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
+    
+    turn_label["text"] = "Turn: " + str(turn_count) if not game_over() else "Game Over!"
+
+def update_white_heuristic():
+    global player_heuristics
+
+    player_heuristics["W"] = white_variable.get()
+    #print(f"White Heuristic: {player_heuristics["W"]}")
+
+def update_black_heuristic():
+    global player_heuristics
+
+    player_heuristics["B"] = black_variable.get()
+    #print(f"Black Heuristic: {player_heuristics["B"]}")
+
+#Move function
+def move():
+    global grid
+    global cur_move
+    global current_player
+    global turn_count
+    global player_heuristics
+
+    if start_game and not game_over():
+        #print("Turn : ", turn_count)
+        #print("Current Player: ", player_heuristics[current_player], current_player)
+        
+        if player_heuristics[current_player] != "player":
+            grid = make_move(grid, current_player, austin_minimax.get_next_move(grid, current_player, player_heuristics[current_player]))
+            
+            if current_player == "W":
+                current_player = "B"
+            else:
+                current_player = "W"
+            
+            turn_count += 1
+            print_grid(grid)
+
+            update_GUI()
+        else:
+            if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1 and cur_move[current_player][2] != -1 and cur_move[current_player][3] != -1:
+                # We have a valid move to do
+                grid = make_move(grid, current_player, cur_move[current_player])
+                update_GUI()
+
+                cur_move[current_player] = (-1, -1, -1, -1)
+
+                if current_player == "W":
+                    current_player = "B"
+                else:
+                    current_player = "W"
+
+        
+
+    window.after(50, move)
+
+def resolve_button_click(i, j):
+    global start_game
+
+    if start_game:
+        global grid
+        global player_heuristics
+        global current_player
+        global cur_move
+
+        if player_heuristics[current_player] == "player":
+            if cur_move[current_player][0] == -1 and cur_move[current_player][1] == -1 and grid[i][j] == current_player:
+                # Player has not clicked anything yet but just clicked one of their own pieces
+                cur_move[current_player] = (j, i, -1, -1)
+            elif cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1 and cur_move[current_player][2] == -1 and cur_move[current_player][3] == -1:
+                temp_move = (cur_move[current_player][0], cur_move[current_player][1], j, i)
+
+                if is_valid_move(grid, current_player, temp_move):
+                    cur_move[current_player] = temp_move
+                else:
+                    cur_move[current_player] = (-1, -1, -1, -1)
+        
+        print(cur_move[current_player])
+
+def play_game():
+    global start_game
+    start_game = True
+
+"""***********************GAME GUI*****************************"""
+window.title('Squeeze-It!')
+
+white_variable.set("player")
+black_variable.set("player")
+
+instructions = tk.Frame(master=window)
+
+instructions_label = tk.Label(master=instructions, text="Choose an option from the following")
+instructions_label.pack()
+
+instructions.pack()
+
+options_frame = tk.Frame(master=window)
+
+white_options = tk.Frame(master=options_frame)
+white_label = tk.Label(master=white_options, text="White Heuristic")
+white_label.pack()
+for heuristic in HEURISTIC_OPTIONS_LIST:
+    tk.Radiobutton(master=white_options, 
+                   text=heuristic[0], 
+                   indicatoron=0, 
+                   padx=20, 
+                   variable=white_variable, 
+                   value=heuristic[1],
+                   command=update_white_heuristic
+    ).pack(anchor=tk.W)
+white_options.grid(row=0, column=0)
+
+black_options = tk.Frame(master=options_frame)
+black_label = tk.Label(master=black_options, text="Black Heuristic")
+black_label.pack()
+for heuristic in HEURISTIC_OPTIONS_LIST:
+    tk.Radiobutton(master=black_options, 
+                   text=heuristic[0], 
+                   indicatoron=0, 
+                   padx=20, 
+                   variable=black_variable, 
+                   value=heuristic[1],
+                   command=update_black_heuristic
+    ).pack(anchor=tk.W)
+black_options.grid(row=0, column=1)
+
+options_frame.pack()
+
+play_game_frame = tk.Frame(master=window)
+
+turn_label = tk.Label(master=play_game_frame, text="Click to Start")
+turn_label.pack()
+
+play_game_button = tk.Button(master=play_game_frame, text="Play Game", command=play_game)
+play_game_button.pack()
+
+play_game_frame.pack()
+
+game_board = tk.Frame(
+    master=window,
+    relief=tk.RAISED,
+    borderwidth=1
+)
+
+for i in range(0, 8, 1):
+    board_buttons.append([])
+    board_button_funcs.append([])
+
+    for j in range(0, 8, 1):
+        frame = tk.Frame(
+            master=game_board,
+            borderwidth=1
+        )
+        frame.grid(row=i, column=j, padx=5, pady=5)
+
+        board_button_funcs[i].append(partial(resolve_button_click, i, j))
+
+        board_buttons[i].append(tk.Button(master=frame, 
+                                        text= 'B' if i == 0 else 'W' if i == 7 else ' ',
+                                        borderwidth=1,
+                                        command=board_button_funcs[i][j]
+        ))
+        board_buttons[i][j].pack()
+
+game_board.pack()
+
+window.after(1000, move)
+
+window.mainloop()
