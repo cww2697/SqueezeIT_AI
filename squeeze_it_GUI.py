@@ -74,24 +74,9 @@ def make_move(board, player, move):
         for x in range(0, 8, 1):
             for y in range(0, 8, 1):
                 if newBoard[y][x] == opponent:
-                    # Check up
-                    for up_space in range(0, y, 1):
-                        if newBoard[up_space][x] == opponent:
-                            # See if we have a series of opposite pieces between these two pieces
-                            capture_flag = True
-                            for inter in range(up_space+1, y, 1):
-                                if newBoard[inter][x] != player:
-                                    capture_flag = False
-                            
-                            if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(up_space+1, y, 1):
-                                    #print(f'{player} lost piece at ({x}, {inter})')
-                                    newBoard[inter][x] = ' '
-
                     # Check down
                     for down_space in range(y+1, 8, 1):
-                        if newBoard[down_space][x] == opponent:
+                        if abs(y - down_space) > 1 and newBoard[down_space][x] == opponent:
                             # See if we have a series of opposite pieces between these two pieces
                             capture_flag = True
                             for inter in range(y+1, down_space, 1):
@@ -99,58 +84,30 @@ def make_move(board, player, move):
                                     capture_flag = False
                             
                             if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(y+1, down_space, 1):
-                                    #print(f'{player} lost piece at ({x}, {inter})')
-                                    newBoard[inter][x] = ' '
-                    
-                    # Check left
-                    for left_space in range(0, x, 1):
-                        if newBoard[y][left_space] == opponent:
-                            # See if we have a series of opposite pieces between these two pieces
-                            capture_flag = True
-                            for inter in range(left_space+1, x, 1):
-                                if newBoard[y][inter] != player:
-                                    capture_flag = False
-                            
-                            if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(left_space+1, x, 1):
-                                    #print(f'{player} lost piece at ({inter}, {y})')
-                                    newBoard[y][inter] = ' '
+                                # All pieces between these two pieces are opposite, so intervention by player
+                                print(f"remove ({x}, {y}) and ({x}, {down_space})")
+                                newBoard[y][x] = ' '
+                                newBoard[down_space][x] = ' '
+
                     # Check right
                     for right_space in range(x+1, 8, 1):
-                        if newBoard[y][right_space] == opponent:
+                        if abs(x - right_space) > 1 and newBoard[y][right_space] == opponent:
                             # See if we have a series of opposite pieces between these two pieces
                             capture_flag = True
+
                             for inter in range(x+1, right_space, 1):
                                 if newBoard[y][inter] != player:
                                     capture_flag = False
                             
                             if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(x+1, right_space, 1):
-                                    #print(f'{player} lost piece at ({inter}, {y})')
-                                    newBoard[y][inter] = ' '
+                                # All pieces between these two pieces are opposite, so intervention by player
+                                print(f"remove ({x}, {y}) and ({right_space}, {y})")
+                                newBoard[y][x] = ' '
+                                newBoard[y][right_space] = ' '
         
         for x in range(0, 8, 1):
             for y in range(0, 8, 1):
                 if newBoard[y][x] == player:
-                     # Check up
-                    for up_space in range(0, y, 1):
-                        if newBoard[up_space][x] == player:
-                            # See if we have a series of opposite pieces between these two pieces
-                            capture_flag = True
-                            for inter in range(up_space+1, y, 1):
-                                if newBoard[inter][x] != opponent:
-                                    capture_flag = False
-                            
-                            if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(up_space+1, y, 1):
-                                    #print(f'{opponent} lost piece at ({x}, {inter})')
-                                    newBoard[inter][x] = ' '
-
                     # Check down
                     for down_space in range(y+1, 8, 1):
                         if newBoard[down_space][x] == player:
@@ -165,21 +122,7 @@ def make_move(board, player, move):
                                 for inter in range(y+1, down_space, 1):
                                     #print(f'{opponent} lost piece at ({x}, {inter})')
                                     newBoard[inter][x] = ' '
-                    
-                    # Check left
-                    for left_space in range(0, x, 1):
-                        if newBoard[y][left_space] == player:
-                            # See if we have a series of opposite pieces between these two pieces
-                            capture_flag = True
-                            for inter in range(left_space+1, x, 1):
-                                if newBoard[y][inter] != opponent:
-                                    capture_flag = False
-                            
-                            if capture_flag:
-                                # All pieces between these two pieces are opposite, so capture them
-                                for inter in range(left_space+1, x, 1):
-                                    #print(f'{opponent} lost piece at ({inter}, {y})')
-                                    newBoard[y][inter] = ' '
+                                    
                     # Check right
                     for right_space in range(x+1, 8, 1):
                         if newBoard[y][right_space] == player:
@@ -278,7 +221,6 @@ def update_GUI():
         for j in range(8):
             board_buttons[i][j]["text"] = grid[i][j]
             #board_buttons[i][j]["bg"] = 'blue'
-            print(cur_move[current_player])
     #if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1:
         #board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
     
@@ -332,6 +274,7 @@ def move():
                     current_player = "B"
                 else:
                     current_player = "W"
+                turn_count += 1
 
         
 
