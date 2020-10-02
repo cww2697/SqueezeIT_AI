@@ -1,7 +1,13 @@
+"""
+    squeeze_it_GUI.py
+
+    Description:
+    This file creates a user interface for the game of Squeeze-it (Mak-Yek) and
+    allows players to play against one another hotseat-style, play against the 
+    minimax AI, or pit different minimax heuristics against one another
+"""
+
 import tkinter as tk
-from enum import Enum
-import re
-import IO
 import minimax
 import time
 from copy import deepcopy
@@ -15,7 +21,7 @@ GRID_WIDTH = 8
 WC = 'W'
 BC = 'B'
 EC = ' '
-
+BG_COLOR = "#FFEEE5"
 
 HEURISTIC_OPTIONS_LIST = [
     ("Player Controlled", "player"),
@@ -29,6 +35,10 @@ window = tk.Tk()
 
 white_variable = tk.StringVar()
 black_variable = tk.StringVar()
+
+black_circle = tk.PhotoImage(file = r"images\\black_circle.png")
+white_circle = tk.PhotoImage(file = r"images\\white_circle.png")
+empty_square = tk.PhotoImage(file = r"images\\empty_square.png")
 
 #Global
 grid = [
@@ -97,8 +107,8 @@ def update_GUI():
 
     for i in range(8):
         for j in range(8):
-            board_buttons[i][j]["text"] = grid[i][j]
-            board_buttons[i][j]["bg"] = '#F0F0F0'
+            board_buttons[i][j]["image"] = black_circle if grid[i][j] == "B" else white_circle if grid[i][j] == "W" else empty_square
+            board_buttons[i][j]["bg"] = '#E4D2B6'
     if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1:
         board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
     
@@ -221,41 +231,53 @@ def reset_game():
 
 """***********************GAME GUI*****************************"""
 window.title('Squeeze-It!')
+window["bg"] = '#FFEEE5'
 
 white_variable.set("player")
 black_variable.set("player")
 
 instructions = tk.Frame(master=window)
 
-instructions_label = tk.Label(master=instructions, text="Choose an option from the following")
+instructions_label = tk.Label(master=instructions, 
+                              text="Choose an option from the following",
+                              bg=BG_COLOR)
 instructions_label.pack()
 
 instructions.pack()
 
-options_frame = tk.Frame(master=window)
+options_frame = tk.Frame(master=window,
+                         bg=BG_COLOR)
 
-white_options = tk.Frame(master=options_frame)
-white_label = tk.Label(master=white_options, text="White Heuristic")
+white_options = tk.Frame(master=options_frame,
+                         bg=BG_COLOR)
+white_label = tk.Label(master=white_options, 
+                       text="White Heuristic",
+                       bg=BG_COLOR)
 white_label.pack()
 for heuristic in HEURISTIC_OPTIONS_LIST:
     tk.Radiobutton(master=white_options, 
                    text=heuristic[0], 
                    indicatoron=0, 
                    padx=20, 
+                   width=20,
                    variable=white_variable, 
                    value=heuristic[1],
                    command=update_white_heuristic
     ).pack(anchor=tk.W)
 white_options.grid(row=0, column=0)
 
-black_options = tk.Frame(master=options_frame)
-black_label = tk.Label(master=black_options, text="Black Heuristic")
+black_options = tk.Frame(master=options_frame,
+                         bg=BG_COLOR)
+black_label = tk.Label(master=black_options, 
+                       text="Black Heuristic",
+                       bg=BG_COLOR)
 black_label.pack()
 for heuristic in HEURISTIC_OPTIONS_LIST:
     tk.Radiobutton(master=black_options, 
                    text=heuristic[0], 
                    indicatoron=0, 
                    padx=20, 
+                   width=20,
                    variable=black_variable, 
                    value=heuristic[1],
                    command=update_black_heuristic
@@ -264,15 +286,22 @@ black_options.grid(row=0, column=1)
 
 options_frame.pack()
 
-play_game_frame = tk.Frame(master=window)
+play_game_frame = tk.Frame(master=window,
+                           bg=BG_COLOR)
 
-turn_label = tk.Label(master=play_game_frame, text="")
+turn_label = tk.Label(master=play_game_frame, 
+                      text="",
+                      bg=BG_COLOR)
 turn_label.pack()
 
-flavor_text = tk.Label(master=play_game_frame, text="Click to Start")
+flavor_text = tk.Label(master=play_game_frame, 
+                       text="Click to Start",
+                       bg=BG_COLOR)
 flavor_text.pack()
 
-play_game_button = tk.Button(master=play_game_frame, text="Play Game", command=play_game)
+play_game_button = tk.Button(master=play_game_frame, 
+                             text="Play Game", 
+                             command=play_game)
 play_game_button.pack()
 
 play_game_frame.pack()
@@ -280,7 +309,8 @@ play_game_frame.pack()
 game_board = tk.Frame(
     master=window,
     relief=tk.RAISED,
-    borderwidth=1
+    borderwidth=1,
+    bg='#513B0E'
 )
 
 for i in range(0, 8, 1):
@@ -290,15 +320,18 @@ for i in range(0, 8, 1):
     for j in range(0, 8, 1):
         frame = tk.Frame(
             master=game_board,
-            borderwidth=1
+            borderwidth=1,
+            bg='#513B0E'
         )
-        frame.grid(row=i, column=j, padx=5, pady=5)
+        frame.grid(row=i, column=j)
 
         board_button_funcs[i].append(partial(resolve_button_click, i, j))
 
         board_buttons[i].append(tk.Button(master=frame, 
                                         text= 'B' if i == 0 else 'W' if i == 7 else ' ',
                                         borderwidth=1,
+                                        image= black_circle if i == 0 else white_circle if i == 7 else empty_square,
+                                        bg="#E4D2B6",
                                         command=board_button_funcs[i][j]
         ))
         board_buttons[i][j].pack()
