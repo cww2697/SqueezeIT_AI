@@ -7,6 +7,7 @@ import time
 from copy import deepcopy
 from functools import partial
 import func
+import heurisitcs
 
 #Constants
 GRID_HEIGHT = 8
@@ -41,10 +42,11 @@ grid = [
     [WC, WC, WC, WC, WC, WC, WC, WC ]]
 cur_move = dict([("W", (-1, -1, -1, -1)), ("B", (-1, -1, -1, -1))])
 current_player = 'W'
-turn_count = 0
+turn_count = 1
 player_heuristics = dict([("W", "player"), ("B", "player")])
 board_buttons = []
 turn_label = ""
+flavor_text = ""
 board_button_funcs = []
 start_game = False
 
@@ -62,10 +64,28 @@ def print_grid(grid):
         print("")
     print("")
 
+def countPieces(player):
+    global grid
+    counter = 0
+
+    for x in range(0, 8, 1):
+        for y in range(0, 8, 1):
+            if grid[y][x] == player:
+                counter += 1
+    
+    return counter
+
 def game_over():
     global turn_count
+    global grid
 
-    return turn_count >= 50
+    if turn_count >= 50:
+        return True
+    elif countPieces("W") == 0:
+        return True
+    elif countPieces("B") == 0:
+        return True
+    return False
 
 def update_GUI():
     global grid
@@ -78,11 +98,23 @@ def update_GUI():
     for i in range(8):
         for j in range(8):
             board_buttons[i][j]["text"] = grid[i][j]
-            #board_buttons[i][j]["bg"] = 'blue'
-    #if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1:
-        #board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
+            board_buttons[i][j]["bg"] = '#F0F0F0'
+    if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1:
+        board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
     
     turn_label["text"] = "Turn: " + str(turn_count) if not game_over() else "Game Over!"
+
+    if not start_game:
+        if turn_count <= 1:
+            flavor_text["text"] = "Click to Start"
+        else:
+            white_score = heurisitcs.simple_heuristic(grid, "W")
+            flavor_text["text"] = "White Wins!" if white_score > 0 else "Black Wins!" if white_score < 0 else "Its a Tie!"
+    else:
+        if current_player == "W":
+            flavor_text["text"] = "White's Turn"
+        else:
+            flavor_text["text"] = "Black's Turn"
 
 def update_white_heuristic():
     global player_heuristics
@@ -103,6 +135,7 @@ def move():
     global current_player
     global turn_count
     global player_heuristics
+    global start_game
 
     if start_game and not game_over():
         #print("Turn : ", turn_count)
@@ -118,13 +151,10 @@ def move():
             
             turn_count += 1
             print_grid(grid)
-
-            update_GUI()
         else:
             if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1 and cur_move[current_player][2] != -1 and cur_move[current_player][3] != -1:
                 # We have a valid move to do
                 grid = func.make_move(grid, current_player, cur_move[current_player])
-                update_GUI()
 
                 cur_move[current_player] = (-1, -1, -1, -1)
 
@@ -133,9 +163,10 @@ def move():
                 else:
                     current_player = "W"
                 turn_count += 1
-
-        
-
+    elif turn_count > 1:
+        start_game = False
+    
+    update_GUI()
     window.after(50, move)
 
 def resolve_button_click(i, j):
@@ -161,9 +192,32 @@ def resolve_button_click(i, j):
         
         print(cur_move[current_player])
 
+
 def play_game():
     global start_game
     start_game = True
+
+def reset_game():
+    global start_game
+    global turn_count
+    global current_player
+    global cur_move
+    global grid
+
+    grid = [
+    [BC, BC, BC, BC, BC, BC, BC, BC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [EC, EC, EC, EC, EC, EC, EC, EC ], 
+    [WC, WC, WC, WC, WC, WC, WC, WC ]]
+    cur_move = dict([("W", (-1, -1, -1, -1)), ("B", (-1, -1, -1, -1))])
+    current_player = 'W'
+    turn_count = 1
+    start_game = False
+
 
 """***********************GAME GUI*****************************"""
 window.title('Squeeze-It!')
@@ -212,8 +266,11 @@ options_frame.pack()
 
 play_game_frame = tk.Frame(master=window)
 
-turn_label = tk.Label(master=play_game_frame, text="Click to Start")
+turn_label = tk.Label(master=play_game_frame, text="")
 turn_label.pack()
+
+flavor_text = tk.Label(master=play_game_frame, text="Click to Start")
+flavor_text.pack()
 
 play_game_button = tk.Button(master=play_game_frame, text="Play Game", command=play_game)
 play_game_button.pack()
@@ -247,6 +304,12 @@ for i in range(0, 8, 1):
         board_buttons[i][j].pack()
 
 game_board.pack()
+
+reset_game_button = tk.Button(master=window, 
+                       text="Reset Game",
+                       borderwidth=1,
+                       command=reset_game)
+reset_game_button.pack()
 
 window.after(50, move)
 
