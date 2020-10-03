@@ -32,6 +32,7 @@ HEURISTIC_OPTIONS_LIST = [
 
 #GUI Globals
 window = tk.Tk()
+window.iconbitmap("images\\squeezeit.ico")
 
 white_variable = tk.StringVar()
 black_variable = tk.StringVar()
