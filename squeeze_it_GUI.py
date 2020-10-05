@@ -161,7 +161,7 @@ def move():
                 current_player = "W"
             
             turn_count += 1
-            print_grid(grid)
+            #print_grid(grid)
         else:
             if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1 and cur_move[current_player][2] != -1 and cur_move[current_player][3] != -1:
                 # We have a valid move to do
