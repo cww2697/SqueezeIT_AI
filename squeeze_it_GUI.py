@@ -27,7 +27,8 @@ HEURISTIC_OPTIONS_LIST = [
     ("Player Controlled", "player"),
     ("Simple Minimax", "simple"),
     ("Aggressive Minimax", "aggressive"),
-    ("Defensive Minimax", "defensive")
+    ("Defensive Minimax", "defensive"),
+    ("Random Minimax", "random")
 ]
 
 #GUI Globals
@@ -152,6 +153,7 @@ def move():
     global turn_count
     global player_heuristics
     global start_game
+    heuristic_runtime_file = open("heuristic_runtimes.csv", "a")
 
     if start_game and not game_over():
         #print("Turn : ", turn_count)
@@ -168,6 +170,8 @@ def move():
             
             cur_turn_time = int(round(time.time()*1000))
             turn_time = cur_turn_time - start_turn_time
+            heuristic_runtime_file.write(f"\"{player_heuristics[current_player]}\",\"{turn_time}\"\n")
+
             turn_count += 1
             #print_grid(grid)
         else:
@@ -187,6 +191,7 @@ def move():
         start_game = False
     
     update_GUI()
+    heuristic_runtime_file.close()
     window.after(50, move)
 
 def resolve_button_click(i, j):
