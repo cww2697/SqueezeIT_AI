@@ -182,8 +182,6 @@ def move():
                     current_player = "B"
                 else:
                     current_player = "W"
-                cur_turn_time = int(round(time.time()*1000))
-                turn_time = cur_turn_time - start_turn_time
                 turn_count += 1
     elif turn_count > 1:
         start_game = False
