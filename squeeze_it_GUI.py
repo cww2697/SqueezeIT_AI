@@ -173,6 +173,7 @@ def move():
         else:
             if cur_move[current_player][0] != -1 and cur_move[current_player][1] != -1 and cur_move[current_player][2] != -1 and cur_move[current_player][3] != -1:
                 # We have a valid move to do
+                start_turn_time = int(round(time.time()*1000))
                 grid = func.make_move(grid, current_player, cur_move[current_player])
 
                 cur_move[current_player] = (-1, -1, -1, -1)
