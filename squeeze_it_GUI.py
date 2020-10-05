@@ -106,6 +106,7 @@ def update_GUI():
     global cur_move
     global turn_count
     global turn_label
+    global turn_time_label
     global turn_time
 
     for i in range(8):
@@ -116,7 +117,7 @@ def update_GUI():
         board_buttons[cur_move[current_player][1]][cur_move[current_player][0]]["bg"] = 'yellow'
     
     turn_label["text"] = "Turn: " + str(turn_count) if not game_over() else "Game Over!"
-    turn_time_label = "Time: " + str(turn_time)
+    turn_time_label["text"] = "Time: " + str(turn_time)
 
     if not start_game:
         if turn_count <= 1:
@@ -155,9 +156,9 @@ def move():
     if start_game and not game_over():
         #print("Turn : ", turn_count)
         #print("Current Player: ", player_heuristics[current_player], current_player)
-        start_turn_time = int(round(time.time()*1000))
 
         if player_heuristics[current_player] != "player":
+            start_turn_time = int(round(time.time()*1000))
             grid = func.make_move(grid, current_player, minimax.get_next_move(grid, current_player, player_heuristics[current_player]))
             
             if current_player == "W":
@@ -307,6 +308,7 @@ turn_label.pack()
 turn_time_label = tk.Label(master=play_game_frame,
                            text="",
                            bg=BG_COLOR)
+turn_time_label.pack()
 
 flavor_text = tk.Label(master=play_game_frame, 
                        text="Click to Start",
