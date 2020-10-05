@@ -12,3 +12,6 @@ CS 5368 Intelligent Systems - Project 1 (Squeeze It)
     > `cd /folder/`
 2. Run the following command
     > `python3 squeeze_it_GUI.py`
+    
+## Functions of the MiniMax
+## Hueristics
