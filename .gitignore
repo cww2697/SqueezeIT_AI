@@ -10,3 +10,4 @@
 /__pycache__
 /austin_minimax_debug.txt
 ex.py
+*.pyc

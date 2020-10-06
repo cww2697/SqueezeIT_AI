@@ -65,8 +65,6 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
             heuristic_value = heurisitcs.defensive_heuristic(board, player)
         elif heuristic_method == 'stay_in_center':
             heuristic_value = heurisitcs.stay_in_the_center_heuristic(board, player)
-        elif heuristic_method == 'random':
-            heuristic_value = heurisitcs.random_heuristic(board, player)
         
         if debug_flag: debug_file.write(debugModifer + f'{heuristic_method} heuristic gives value of {heuristic_value}\n')
 
