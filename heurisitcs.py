@@ -72,6 +72,8 @@ def defensive_heuristic(board, player):
 # Encourages trades
 # Encourages being close to opponent
 def aggressive_heuristic(board, player):
+    base_counter = defensive_heuristic(board, player)
+    simple_counter = simple_heuristic(board,player)
     counter = 0
     opponent = 'W' if player == 'B' else 'B'
 
@@ -106,8 +108,13 @@ def aggressive_heuristic(board, player):
             # Encourage being next to the opponent
             if board[y][x] == player and board[y-1][x] == opponent:
                 counter += 1
+    if base_counter > counter:
+        return base_counter
+    elif base_counter < counter:
+        return counter
+    else:
+        return simple_counter
 
-    return counter
 
 # Randomly picks an above heuristic. This heuristic is very
 # bad for quite a few reasons, but is fun to play against
