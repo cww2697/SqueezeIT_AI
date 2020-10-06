@@ -10,7 +10,7 @@ CS 5368 Intelligent Systems - Project 1 (Squeeze It)
 ## How to Run 
 1. Open terminal or commmand prompt
 2. Go to the folder where the program is downloaded
-    > `cd /folder/`
+    > `cd /folder/src`
 2. Run the following command
 
     Windows: 
