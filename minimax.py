@@ -24,7 +24,7 @@ def get_next_move(board, player, heuristic_method):
     # Set how deep we want to go
     depth = 3
 
-    debug_flag = True
+    debug_flag = False
     debug_file = ""
 
     # Initialize debug File
