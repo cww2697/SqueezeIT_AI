@@ -55,15 +55,22 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
 
     if depth < current_level:
         # We are at the bottom of the tree, time to propigate back up
-        #if debug_flag: debug_file.write(debugModifer + 'At bottom. Get value of board\n')
+        heuristic_value = 0
+
         if heuristic_method == 'simple':
-            return heurisitcs.simple_heuristic(board, player)
+            heuristic_value = heurisitcs.simple_heuristic(board, player)
         elif heuristic_method == 'aggressive':
-            return heurisitcs.aggressive_heuristic(board, player)
+            heuristic_value = heurisitcs.aggressive_heuristic(board, player)
         elif heuristic_method == 'defensive':
-            return heurisitcs.defensive_heuristic(board, player)
+            heuristic_value = heurisitcs.defensive_heuristic(board, player)
+        elif heuristic_method == 'stay_in_center':
+            heuristic_value = heurisitcs.stay_in_the_center_heuristic(board, player)
         elif heuristic_method == 'random':
-            return heurisitcs.random_heuristic(board, player)
+            heuristic_value = heurisitcs.random_heuristic(board, player)
+        
+        if debug_flag: debug_file.write(debugModifer + f'{heuristic_method} heuristic gives value of {heuristic_value}\n')
+
+        return heuristic_value
     else:
         # Initialize containers for best moves
         # If we are minimizing, use 99. If maximizing, use -99 (i.e., no matter what, the heuristic will be

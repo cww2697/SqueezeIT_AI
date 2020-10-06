@@ -28,6 +28,7 @@ HEURISTIC_OPTIONS_LIST = [
     ("Simple Minimax", "simple"),
     ("Aggressive Minimax", "aggressive"),
     ("Defensive Minimax", "defensive"),
+    ("Center Minimax", "stay_in_center"),
     ("Random Minimax", "random")
 ]
 
