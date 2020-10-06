@@ -4,7 +4,7 @@ CS 5368 Intelligent Systems - Project 1 (Squeeze It)
 
 
 ## Requirements
-* Python 3.7
+* Python 3.7+
 * Windows, MacOS, Linux
 
 ## How to Run 
