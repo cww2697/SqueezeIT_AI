@@ -17,6 +17,7 @@ import datetime
 import heurisitcs
 import func
 
+# Custom exception to escape out of nested loops when we prune a branch
 class PruneBranch(Exception):
     pass
 
@@ -24,7 +25,11 @@ def get_next_move(board, player, heuristic_method):
     # Set how deep we want to go
     depth = 3
 
+    # Flag for if we want a debug output file. Including the file increases runtime a bit,
+    # but it allows us to see how the AI is making decisions
     debug_flag = False
+
+    # Debug file declaration
     debug_file = ""
 
     # Initialize debug File
@@ -33,28 +38,27 @@ def get_next_move(board, player, heuristic_method):
         debug_file.write(datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).isoformat())
         debug_file.write('\n\n')
 
+    # Get the move
     result = minimax(board, player, depth, 1, -99, 99, heuristic_method, debug_flag, debug_file)
 
     if debug_flag:
         debug_file.close()
 
-    #print(result)
-
     return result
 
 def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_flag, debug_file):
+    # Copy alpha and beta
     alpha = a
     beta = b
     
+    # Modifier for debug file to indent farther as the depth gets greater
     debugModifer = ''
-
     for i in range(0, current_level-1, 1):
         debugModifer += '\t'
-    
     debugModifer += str(current_level) + ' - '
 
     if depth < current_level:
-        # We are at the bottom of the tree, time to propigate back up
+        # We are at the bottom of the tree, time to get the value of the state and propigate back up
         heuristic_value = 0
 
         if heuristic_method == 'simple':
@@ -66,6 +70,7 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
         elif heuristic_method == 'stay_in_center':
             heuristic_value = heurisitcs.stay_in_the_center_heuristic(board, player)
         
+        # Record the value of the state if we are outputing
         if debug_flag: debug_file.write(debugModifer + f'{heuristic_method} heuristic gives value of {heuristic_value}\n')
 
         return heuristic_value
@@ -121,9 +126,11 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
                                         bestMove = currentMove
                                         bestHeuristic = currentHeuristic
                                     
+                                    # See if worse we have seen at this node is worse than beta
                                     if bestHeuristic < beta:
                                         beta = bestHeuristic
                                     
+                                    # If alpha >= beta, we can prune
                                     if alpha >= beta:
                                         if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
                                         raise PruneBranch
@@ -166,15 +173,18 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
                                         bestMove = currentMove
                                         bestHeuristic = currentHeuristic
                                     
+                                    # See if worst we have seen at this node is worse than beta
                                     if bestHeuristic < beta:
                                         beta = bestHeuristic
                                     
+                                    # If alpha >= beta, we can prune
                                     if alpha >= beta:
                                         if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
                                         raise PruneBranch
                             else:
                                 if debug_flag: debug_file.write(debugModifer + str(currentMove) + 'is not a valid move\n')
         except PruneBranch:
+            # Used to jump out of all of the loops if we are pruning a branch
             pass    
 
         # If we are propigating, return the best heuristic
