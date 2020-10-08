@@ -101,7 +101,7 @@ def game_over():
     global turn_count
     global grid
 
-    if turn_count >= 50:
+    if turn_count > 100:
         return True
     elif countPieces("W") == 0:
         return True
