@@ -27,7 +27,7 @@ def get_next_move(board, player, heuristic_method):
 
     # Flag for if we want a debug output file. Including the file increases runtime a bit,
     # but it allows us to see how the AI is making decisions
-    debug_flag = False
+    debug_flag = True
 
     # Debug file declaration
     debug_file = ""
