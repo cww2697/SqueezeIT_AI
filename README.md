@@ -1,4 +1,4 @@
-# cs5368_proj1
+# SqueezeIT AI Agent
 CS 5368 Intelligent Systems - Project 1 (Squeeze It)
 
 
