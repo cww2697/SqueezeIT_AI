@@ -8,6 +8,7 @@
 /.vs/PythonSettings.json
 /.vs/VSWorkspaceState.json
 /__pycache__
-/austin_minimax_debug.txt
+/*.txt
+/
 ex.py
 *.pyc

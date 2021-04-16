@@ -17,9 +17,11 @@ import datetime
 import heurisitcs
 import func
 
+
 # Custom exception to escape out of nested loops when we prune a branch
 class PruneBranch(Exception):
     pass
+
 
 def get_next_move(board, player, heuristic_method):
     # Set how deep we want to go
@@ -29,12 +31,11 @@ def get_next_move(board, player, heuristic_method):
     # but it allows us to see how the AI is making decisions
     debug_flag = True
 
-    # Debug file declaration
-    debug_file = ""
-
     # Initialize debug File
     if debug_flag:
-        debug_file = open('austin_minimax_debug.txt', 'w')
+        date = datetime.datetime.now()
+        debug_file_name = '{0}debug.txt'.format(date.strftime("%d%m%Y"))
+        debug_file = open(debug_file_name, 'w+')
         debug_file.write(datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp()).isoformat())
         debug_file.write('\n\n')
 
@@ -46,19 +47,20 @@ def get_next_move(board, player, heuristic_method):
 
     return result
 
+
 def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_flag, debug_file):
     # Copy alpha and beta
     alpha = a
     beta = b
-    
+
     # Modifier for debug file to indent farther as the depth gets greater
-    debugModifer = ''
-    for i in range(0, current_level-1, 1):
-        debugModifer += '\t'
-    debugModifer += str(current_level) + ' - '
+    debug_modifer = ''
+    for i in range(0, current_level - 1, 1):
+        debug_modifer += '\t'
+    debug_modifer += str(current_level) + ' - '
 
     if depth < current_level:
-        # We are at the bottom of the tree, time to get the value of the state and propigate back up
+        # We are at the bottom of the tree, time to get the value of the state and propagate back up
         heuristic_value = 0
 
         if heuristic_method == 'simple':
@@ -69,17 +71,18 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
             heuristic_value = heurisitcs.defensive_heuristic(board, player)
         elif heuristic_method == 'stay_in_center':
             heuristic_value = heurisitcs.stay_in_the_center_heuristic(board, player)
-        
-        # Record the value of the state if we are outputing
-        if debug_flag: debug_file.write(debugModifer + f'{heuristic_method} heuristic gives value of {heuristic_value}\n')
+
+        # Record the value of the state if we are outputting
+        if debug_flag: debug_file.write(
+            debug_modifer + f'{heuristic_method} heuristic gives value of {heuristic_value}\n')
 
         return heuristic_value
     else:
         # Initialize containers for best moves
         # If we are minimizing, use 99. If maximizing, use -99 (i.e., no matter what, the heuristic will be
         # replaced on the first move we look at)
-        bestMove = ()
-        bestHeuristic = -99 if current_level % 2 != 0 else 99
+        best_move = ()
+        best_heuristic = -99 if current_level % 2 != 0 else 99
         opponent = 'W' if player == 'B' else 'B'
         current_player = player if current_level % 2 != 0 else opponent
 
@@ -90,110 +93,130 @@ def minimax(board, player, depth, current_level, a, b, heuristic_method, debug_f
                     # When odd, consider your moves. When even, consider opponent moves
                     if board[y][x] == current_player:
                         # Generate every possible move this piece can do (limit search to just row and column)
-                        
+
                         # Check vertical moves
                         for newY in range(0, 8, 1):
                             # Make a new move
-                            currentMove = (x, y, x, newY)
+                            current_move = (x, y, x, newY)
 
-                            if debug_flag: debug_file.write(debugModifer + ' Considering ' + str(currentMove) + '\n')
+                            if debug_flag:
+                                debug_file.write(
+                                    '{0} Considering {1}\n'.format(debug_modifer, str(current_move)))
 
                             # If it is a valid move, 
-                            if func.is_valid_move(board, current_player, currentMove):
-                                currentHeuristic = minimax(func.make_move(board, current_player, currentMove), player, depth, current_level + 1, alpha, beta, heuristic_method, debug_flag, debug_file)
+                            if func.is_valid_move(board, current_player, current_move):
+                                current_heuristic = minimax(func.make_move(board, current_player, current_move), player,
+                                                            depth, current_level + 1, alpha, beta, heuristic_method,
+                                                            debug_flag, debug_file)
 
                                 if current_level % 2 != 0:
                                     # Odd level, so maximize
 
                                     # Get max we have seen at this node and what we just saw
-                                    if currentHeuristic > bestHeuristic:
-                                        if debug_flag: debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} > {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
+                                    if current_heuristic > best_heuristic:
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + str(current_move) + ' is better than ' + str(
+                                                best_move) + f'({str(current_heuristic)} > {str(best_heuristic)})\n')
+                                        best_move = current_move
+                                        best_heuristic = current_heuristic
 
                                     # See if best we have seen at this node is better than alpha
-                                    if bestHeuristic > alpha:
-                                        alpha = bestHeuristic
-                                    
+                                    if best_heuristic > alpha:
+                                        alpha = best_heuristic
+
                                     # If alpha >= beta, we can prune
                                     if alpha >= beta:
-                                        if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
                                         raise PruneBranch
                                 else:
                                     # Even level, so minimize
-                                    if currentHeuristic < bestHeuristic:
-                                        if debug_flag: debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                    
+                                    if current_heuristic < best_heuristic:
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + str(current_move) + ' is better than ' + str(
+                                                best_move) + f'({str(current_heuristic)} < {str(best_heuristic)})\n')
+                                        best_move = current_move
+                                        best_heuristic = current_heuristic
+
                                     # See if worse we have seen at this node is worse than beta
-                                    if bestHeuristic < beta:
-                                        beta = bestHeuristic
-                                    
+                                    if best_heuristic < beta:
+                                        beta = best_heuristic
+
                                     # If alpha >= beta, we can prune
                                     if alpha >= beta:
-                                        if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
+                                        if debug_flag: debug_file.write(
+                                            f'{0}{alpha} >= {beta} PRUNING BRANCH\n'.format(debug_modifer))
                                         raise PruneBranch
                             else:
-                                if debug_flag: debug_file.write(debugModifer + str(currentMove) + ' is not a valid move\n') 
+                                if debug_flag: debug_file.write(
+                                    '{0}{1} is not a valid move\n'.format(debug_modifer, str(current_move)))
 
-                        # Check horizontal moves
+                                # Check horizontal moves
                         for newX in range(0, 8, 1):
                             # Make a new move
-                            currentMove = (x, y, newX, y)
+                            current_move = (x, y, newX, y)
 
-                            ##print(debugModifer, 'Considering', currentMove)
-                            if debug_flag: debug_file.write(debugModifer + ' Considering ' + str(currentMove) + '\n')
+                            if debug_flag: debug_file.write(debug_modifer + ' Considering ' + str(current_move) + '\n')
 
                             # If it is a valid move
-                            if func.is_valid_move(board, current_player, currentMove):
-                                currentHeuristic = minimax(func.make_move(board, current_player, currentMove), player, depth, current_level + 1, alpha, beta, heuristic_method, debug_flag, debug_file)
+                            if func.is_valid_move(board, current_player, current_move):
+                                current_heuristic = minimax(func.make_move(board, current_player, current_move), player,
+                                                            depth, current_level + 1, alpha, beta, heuristic_method,
+                                                            debug_flag, debug_file)
 
                                 if current_level % 2 != 0:
                                     # Odd level, so maximize
 
                                     # Get max we have seen at this node and what we just saw
-                                    if currentHeuristic > bestHeuristic:
-                                        if debug_flag: debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} > {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
+                                    if current_heuristic > best_heuristic:
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + str(current_move) + ' is better than ' + str(
+                                                best_move) + f'({str(current_heuristic)} > {str(best_heuristic)})\n')
+                                        best_move = current_move
+                                        best_heuristic = current_heuristic
 
                                     # See if best we have seen at this node is better than alpha
-                                    if bestHeuristic > alpha:
-                                        alpha = bestHeuristic
-                                    
+                                    if best_heuristic > alpha:
+                                        alpha = best_heuristic
+
                                     # If alpha >= beta, we can prune
                                     if alpha >= beta:
-                                        if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
                                         raise PruneBranch
                                 else:
                                     # Even level, so minimize
-                                    if currentHeuristic < bestHeuristic:
-                                        if debug_flag: debug_file.write(debugModifer + str(currentMove) + ' is better than ' + str(bestMove) + f'({str(currentHeuristic)} < {str(bestHeuristic)})\n')
-                                        bestMove = currentMove
-                                        bestHeuristic = currentHeuristic
-                                    
+                                    if current_heuristic < best_heuristic:
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + str(current_move) + ' is better than ' + str(
+                                                best_move) + f'({str(current_heuristic)} < {str(best_heuristic)})\n')
+                                        best_move = current_move
+                                        best_heuristic = current_heuristic
+
                                     # See if worst we have seen at this node is worse than beta
-                                    if bestHeuristic < beta:
-                                        beta = bestHeuristic
-                                    
+                                    if best_heuristic < beta:
+                                        beta = best_heuristic
+
                                     # If alpha >= beta, we can prune
                                     if alpha >= beta:
-                                        if debug_flag: debug_file.write(debugModifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
+                                        if debug_flag: debug_file.write(
+                                            debug_modifer + f'{alpha} >= {beta} PRUNING BRANCH\n')
                                         raise PruneBranch
                             else:
-                                if debug_flag: debug_file.write(debugModifer + str(currentMove) + 'is not a valid move\n')
+                                if debug_flag: debug_file.write(
+                                    debug_modifer + str(current_move) + 'is not a valid move\n')
         except PruneBranch:
             # Used to jump out of all of the loops if we are pruning a branch
-            pass    
+            pass
 
-        # If we are propigating, return the best heuristic
-        # If we are done propigating, return the best move we found
+            # If we are propagating, return the best heuristic
+        # If we are done propagating, return the best move we found
         if current_level == 1:
-            ##print(debugModifer, 'Best move:', bestMove, 'with Heuristic:', bestHeuristic)
-            if debug_flag: debug_file.write(debugModifer + 'Best move: ' + str(bestMove) + ' with Heuristic ' + str(bestHeuristic) + '\n')
-            return bestMove
+            if debug_flag: debug_file.write(
+                debug_modifer + 'Best move: ' + str(best_move) + ' with Heuristic ' + str(best_heuristic) + '\n')
+            return best_move
+
         else:
-            ##print(debugModifer, 'Best Heuristic at level', str(current_level) + ':', bestHeuristic)
-            if debug_flag: debug_file.write(debugModifer + 'Best Heuristic at level ' + str(current_level) + ': ' + str(bestHeuristic) + '\n')
-            return bestHeuristic
+            if debug_flag: debug_file.write(
+                debug_modifer + 'Best Heuristic at level ' + str(current_level) + ': ' + str(best_heuristic) + '\n')
+            return best_heuristic
